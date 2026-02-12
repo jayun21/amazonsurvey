@@ -1,0 +1,1303 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Allow embedding in iframes -->
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self' https://sites.google.com https://*.google.com;">
+    <title>Amazon Prototypes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: 220 20% 12%;
+            --foreground: 210 20% 90%;
+            --card: 220 18% 16%;
+            --card-foreground: 210 20% 90%;
+            --primary: 210 90% 55%;
+            --primary-foreground: 0 0% 100%;
+            --muted: 220 15% 20%;
+            --muted-foreground: 210 15% 60%;
+            --border: 220 15% 25%;
+            --radius: 0.75rem;
+
+            --bg-color: hsl(var(--background));
+            --text-color: hsl(var(--foreground));
+            --accent-color: hsl(var(--primary));
+            --card-bg: hsl(var(--card));
+            --border-color: hsl(var(--border));
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            letter-spacing: -0.02em;
+            font-size: 2.5rem;
+        }
+
+        .viewer-layout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        /* Standard Container for Main Page */
+        .img-container {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Form Container - Light background for Google Forms */
+        .form-container {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex-grow: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .form-container iframe {
+            width: 100%;
+            height: 70vh;
+            min-height: 600px;
+            border: none;
+            border-radius: calc(var(--radius) - 4px);
+        }
+
+        /* Autofit Container for "See More" Popup */
+        #more-overlay .img-container {
+            min-height: unset;
+            display: inline-block;
+            width: fit-content;
+            margin: auto;
+        }
+
+        .img-container:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+
+        .img-container img {
+            width: 100%;
+            height: auto;
+            max-height: 65vh;
+            border-radius: calc(var(--radius) - 4px);
+            object-fit: contain;
+            display: block;
+        }
+
+        .nav-button {
+            background-color: var(--accent-color);
+            color: hsl(var(--primary-foreground));
+            border: none;
+            padding: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-button:hover:not(:disabled) { transform: scale(1.1); }
+
+        .nav-button:disabled {
+            background-color: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+            cursor: not-allowed;
+        }
+
+        .restart-btn {
+            background-color: transparent !important;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color) !important;
+            font-size: 22px;
+        }
+
+        .restart-btn:hover:not(:disabled) {
+            background-color: var(--accent-color) !important;
+            color: white !important;
+        }
+
+        .secondary-btn {
+            margin-top: 25px;
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .progress {
+            margin-top: 20px;
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        /* Overlays */
+        #overlay, #more-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            backdrop-filter: blur(8px);
+        }
+
+        #overlay { z-index: 1100; }
+
+        #overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+
+        #more-overlay .more-content {
+            width: 95%;
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            cursor: default;
+            align-items: center;
+        }
+
+        .close-x {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        /* Color Picker Styles (BIGGER TABLE) */
+        .color-picker-layout {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .color-grid-section {
+            flex: 1;
+            max-width: 980px;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .color-item {
+            background: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .color-item:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+
+        .color-item.selected {
+            border-color: var(--accent-color);
+            background-color: hsl(var(--primary) / 0.15);
+            box-shadow: 0 0 0 3px hsl(var(--primary) / 0.25);
+        }
+
+        .color-item img {
+            width: 100%;
+            height: 190px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            pointer-events: none;
+        }
+
+        .color-item .color-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        /* PREVIEW SECTION */
+        .preview-section {
+            width: 560px;
+            min-width: 520px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .preview-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .preview-stack {
+            position: relative;
+            width: 100%;
+            height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, hsl(220 15% 18%) 0%, hsl(220 20% 14%) 100%);
+            border-radius: calc(var(--radius) - 4px);
+            overflow: hidden;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .preview-stack img {
+            position: absolute;
+            height: 290px;
+            width: auto;
+            max-width: none;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3));
+            transition: transform 0.2s ease, filter 0.2s ease;
+            pointer-events: none;
+        }
+
+        .selection-count {
+            margin-top: 16px;
+            font-size: 1rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .selection-count.limit-reached {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* Floating Prototype Nav Box */
+        .proto-nav-box {
+            position: fixed;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .proto-nav-box button {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .proto-nav-box button:hover {
+            border-color: var(--accent-color);
+            background: hsl(var(--primary) / 0.15);
+            color: var(--accent-color);
+            transform: translateX(4px);
+        }
+
+        .proto-nav-box button.preset-active {
+            border-color: var(--accent-color);
+            background: hsl(var(--primary) / 0.2);
+            color: var(--accent-color);
+            box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3), 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .nav-box-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: hsl(var(--muted-foreground));
+            padding: 0 4px 4px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        #nav-preset-group, #nav-popup-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-clear-btn {
+            font-size: 0.7rem !important;
+            padding: 7px 10px !important;
+            opacity: 0.7;
+        }
+
+        .preset-clear-btn:hover {
+            opacity: 1;
+        }
+
+        /* Prototype Popup Overlay */
+        #proto-popup-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1050;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        #proto-popup-overlay .popup-frame-wrapper {
+            width: 92%;
+            height: 90%;
+            max-width: 1400px;
+            background: var(--bg-color);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #proto-popup-overlay .popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #proto-popup-overlay .popup-header-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        #proto-popup-overlay .popup-close-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        #proto-popup-overlay .popup-close-btn:hover {
+            background: hsl(var(--primary) / 0.15);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        #proto-popup-overlay iframe {
+            width: 100%;
+            height: calc(100% - 58px);
+            border: none;
+        }
+
+        /* Prototype 5 Summary Panel (right side) */
+        .proto5-summary {
+            position: fixed;
+            right: 20px;
+            top: 130px;
+            z-index: 900;
+            width: 260px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            padding: 12px 14px;
+            text-align: left;
+        }
+        .proto5-summary-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        .proto5-summary-subtitle {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: hsl(var(--muted-foreground));
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .proto5-summary-list {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: hsl(var(--foreground));
+        }
+
+        /* Prototype 5 Color Picker Overlay */
+        #proto5-color-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1060;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+        #proto5-color-overlay .proto5-frame {
+            width: 92%;
+            max-width: 1320px;
+            height: 90%;
+            overflow: hidden;
+        }
+        .proto5-popup-body {
+            height: calc(100% - 58px);
+            overflow: auto;
+            padding: 18px;
+            background: var(--bg-color);
+        }
+
+        /* NEW: Proto 5 layout with preview (like Select Your Colors) */
+        .proto5-picker-layout {
+            display: grid;
+            grid-template-columns: 1fr 520px;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .proto5-grid-wrap {
+            min-width: 0;
+        }
+
+        .proto5-popup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .proto5-preview-section {
+            position: sticky;
+            top: 12px;
+        }
+
+        .proto5-preview-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .proto5-preview-title {
+            font-weight: 600;
+            margin-bottom: 14px;
+            font-size: 1.05rem;
+        }
+
+        .proto5-preview-stack {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, hsl(220 15% 18%) 0%, hsl(220 20% 14%) 100%);
+            border-radius: calc(var(--radius) - 4px);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .proto5-preview-stack img {
+            position: absolute;
+            height: 240px;
+            width: auto;
+            max-width: none;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        .proto5-popup-actions {
+            position: sticky;
+            bottom: 0;
+            background: hsl(var(--background));
+            border-top: 1px solid var(--border-color);
+            padding: 14px 0 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        /* Make "0 of 6 selected" NOT TRANSPARENT (pill) */
+        #proto5-selection-count {
+            margin-top: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: hsl(var(--foreground));
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+        }
+
+        /* Hide nav box when page is inside an iframe */
+        body.in-iframe .proto-nav-box { display: none; }
+        body.in-iframe .proto5-summary { display: none !important; }
+
+        /* QUICK VIEW: hide ALL buttons in iframe so it's the exact prototype */
+        body.in-iframe .nav-button,
+        body.in-iframe .secondary-btn,
+        body.in-iframe .progress,
+        body.in-iframe .form-container,
+        body.in-iframe #form-view,
+        body.in-iframe #color-picker-view,
+        body.in-iframe h1 {
+            display: none !important;
+        }
+
+        body.in-iframe .container {
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+
+        body.in-iframe .viewer-layout {
+            gap: 0 !important;
+        }
+
+        body.in-iframe #image-view {
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+        }
+
+        body.in-iframe .image-grid {
+            width: 100% !important;
+            gap: 18px !important;
+            padding: 18px !important;
+            box-sizing: border-box;
+        }
+
+        body.in-iframe .img-container {
+            cursor: zoom-in;
+            min-height: 0;
+        }
+
+        @media (max-width: 1100px) {
+            .proto5-picker-layout {
+                grid-template-columns: 1fr;
+            }
+            .proto5-preview-section {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="proto-nav-box">
+        <div id="nav-popup-group">
+            <div class="nav-box-label">Quick View</div>
+            <button data-proto-popup="0">Prototype 1</button>
+            <button data-proto-popup="1">Prototype 2</button>
+            <button data-proto-popup="2">Prototype 3</button>
+            <button data-proto-popup="3">Prototype 4</button>
+
+            <button id="open-proto5-color-btn">Create your Prototype 5</button>
+        </div>
+        <div id="nav-preset-group" style="display: none;">
+            <div class="nav-box-label">Auto-Fill Colors</div>
+            <button data-preset="1">Prototype 1</button>
+            <button data-preset="2">Prototype 2</button>
+            <button data-preset="3">Prototype 3</button>
+            <button data-preset="4">Prototype 4</button>
+            <button class="preset-clear-btn" id="preset-clear-btn">Clear All</button>
+        </div>
+    </div>
+
+    <div class="proto5-summary" id="proto5-summary" style="display:none;">
+        <div class="proto5-summary-title">Prototype 5 Colors</div>
+        <div class="proto5-summary-subtitle">Selected (6)</div>
+        <ol class="proto5-summary-list" id="proto5-summary-list"></ol>
+    </div>
+
+    <div id="proto-popup-overlay">
+        <div class="popup-frame-wrapper">
+            <div class="popup-header">
+                <span class="popup-header-title" id="popup-proto-title"></span>
+                <button class="popup-close-btn" id="popup-close-btn">×</button>
+            </div>
+            <div id="proto-popup-body" style="height: calc(100% - 58px); overflow: auto; display: flex; align-items: center; justify-content: center; padding: 18px; gap: 18px; background: var(--bg-color);">
+                <div class="image-grid" style="width: 100%; padding: 0;">
+                    <div class="img-container" style="min-height: 0; cursor: zoom-in;" id="popup-img-left-container">
+                        <img id="popup-img-left" src="" alt="Left View">
+                    </div>
+                    <div class="img-container" style="min-height: 0; cursor: zoom-in;" id="popup-img-right-container">
+                        <img id="popup-img-right" src="" alt="Right View">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="proto5-color-overlay">
+        <div class="popup-frame-wrapper proto5-frame">
+            <div class="popup-header">
+                <span class="popup-header-title">Create your Prototype 5</span>
+            </div>
+
+            <div class="proto5-popup-body">
+                <div class="proto5-picker-layout">
+                    <div class="proto5-grid-wrap">
+                        <div class="proto5-popup-grid" id="proto5-color-grid"></div>
+                    </div>
+
+                    <div class="proto5-preview-section">
+                        <div class="proto5-preview-container">
+                            <div class="proto5-preview-title">Live Preview — Stacked Folders</div>
+                            <div class="proto5-preview-stack" id="proto5-preview-stack">
+                                <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Select colors to preview</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="proto5-popup-actions">
+                    <div class="selection-count" id="proto5-selection-count">0 of 6 selected</div>
+                    <button class="nav-button" id="proto5-submit-btn" disabled
+                        style="border-radius: var(--radius); width: auto; height: auto; padding: 12px 18px; font-size: 16px;">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay">
+        <span class="close-x" id="overlay-close-x">×</span>
+        <img id="overlay-img" src="" alt="Fullscreen view">
+    </div>
+
+    <div id="more-overlay">
+        <span class="close-x" id="more-overlay-close-x">×</span>
+        <div class="more-content">
+            <div class="img-container" id="more-img-left-container">
+                <img id="more-img-left" src="" alt="More 1">
+            </div>
+            <div class="img-container" id="more-img-right-container">
+                <img id="more-img-right" src="" alt="More 2">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 id="proto-title">Feedback Form</h1>
+
+        <div class="viewer-layout" id="image-view" style="display: none;">
+            <button class="nav-button" id="prev-btn">←</button>
+
+            <div class="image-grid">
+                <div class="img-container" id="img-left-container">
+                    <img id="img-left" src="" alt="Left View">
+                </div>
+                <div class="img-container" id="img-right-container">
+                    <img id="img-right" src="" alt="Right View">
+                </div>
+            </div>
+
+            <button class="nav-button" id="next-btn">→</button>
+            <button class="nav-button restart-btn" id="restart-btn" title="Return to first page" style="display: none;">↺</button>
+        </div>
+
+        <div class="viewer-layout" id="form-view" style="display: flex;">
+            <button class="nav-button" id="prev-btn-form" disabled>←</button>
+
+            <div class="form-container">
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfUxx1ARH5zcDPM1Mhn8W1oVmtSEqERwbdKxCFLL-qYskSndA/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+            </div>
+
+            <button class="nav-button" id="next-btn-form">→</button>
+        </div>
+
+        <div id="color-picker-view" style="display: none;">
+            <div class="color-picker-layout">
+                <div class="color-grid-section">
+                    <div class="color-grid" id="color-grid"></div>
+                </div>
+                <div class="preview-section">
+                    <div class="preview-container">
+                        <div class="preview-title">Live Preview — Stacked Folders</div>
+                        <div class="preview-stack" id="preview-stack">
+                            <p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Select colors to preview</p>
+                        </div>
+                        <div class="selection-count" id="selection-count">0 of 6 selected</div>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="nav-button" id="color-prev-btn" style="flex: 1; border-radius: var(--radius); width: auto; height: auto; padding: 12px;">← Back</button>
+                        <button class="nav-button" id="color-next-btn" style="flex: 1; border-radius: var(--radius); width: auto; height: auto; padding: 12px;">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="secondary-btn" id="more-btn" style="display: none;">See more pictures</button>
+        <div class="progress" id="progress-text">Page 1 of 6</div>
+    </div>
+
+    <script>
+        // Detect if loaded inside an iframe and auto-navigate to requested prototype
+        (function() {
+            if (window.self !== window.top) {
+                document.body.classList.add('in-iframe');
+                const params = new URLSearchParams(window.location.search);
+                const protoIndex = params.get('proto');
+                if (protoIndex !== null) {
+                    // Will be used after prototypes array is defined
+                    window._autoNavIndex = parseInt(protoIndex);
+                }
+            }
+        })();
+
+        // ======== DEBUG LOGGING ========
+        console.log('✓ JavaScript is executing');
+        console.log('Page URL:', window.location.href);
+        console.log('Embedded in iframe:', window.self !== window.top);
+        console.log('Referrer:', document.referrer);
+        
+        // Image load error detection
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                console.error('❌ Image failed to load:', e.target.src);
+                console.error('Error details:', e);
+            }
+        }, true);
+
+        const colors = [
+            { name: "Black", id: "1EaHKRrZy1Z7DmZO8zGsl92zX7bLpQLrO" },
+            { name: "Clear", id: "1AmNDtmAEqxeHqmQbbCU2WuZf1JOa_RkR" },
+            { name: "Metallic Blue", id: "1T_vzJxx_jBEjAxa_ZOwjPEHZ3ocFWKUh" },
+            { name: "Metallic Gold", id: "1EJVhFfwd1kpMqADBfQkDrgPVaAEWQpaA" },
+            { name: "Metallic Green", id: "1AFewRVZWCr6Zy_Y-WWb4OdSjNKiEZaev" },
+            { name: "Metallic Maroon", id: "1iztqp3PyFyGNilvTM_YBQVkais1hxwTX" },
+            { name: "Metallic Silver", id: "12NrWnneyQgA-HYhXx95hGnc49QaYvPW7" },
+            { name: "Metallic Violet", id: "1w67VgxYmxMwU1HPNhATdTh-zd5n4enAI" },
+            { name: "Navy Blue", id: "19AIItvry1mN7CHYDRcpql4hRzj0vhckh" },
+            { name: "Orange", id: "1Bl4bZ8W2-NRnSExmaHx2mHj892lJbGgk" },
+            { name: "Pink", id: "16tsOxBXxU-UPwZ_PLcNVzucgEAs451Hn" },
+            { name: "Powder Blue", id: "1rf9oi4JU691SWsMF9j56-5dm5swDXHq1" },
+            { name: "Red", id: "1vagtSHsZxRxDAOpZF1SMUfRvKIP7RdBq" },
+            { name: "Standard Green", id: "1oVG3FpGFr-sJVD-37-gkg2XsFRYcLoxb" },
+            { name: "White", id: "1EQBaC23NOXJy4ZUSMKBQmDZ4JJodtbJy" },
+            { name: "Yellow", id: "1BXR0JpQ6RsCaIv-7tGcf4cLG2e_q8cxQ" }
+        ];
+
+        const prototypes = [
+            { title: "Amazon Prototype Form", type: "form" },
+            { title: "Choose Your Colors", type: "color-picker" },
+            {
+                title: "Prototype 1",
+                type: "images",
+                left: "https://lh3.googleusercontent.com/d/1Z2N-uVOZXL3RN28efpX1WsNXOUZlo7r5=s2000",
+                right: "https://lh3.googleusercontent.com/d/1uPK4Vs_ecZKPjWVP12aSgp4OSxzmptO5=s2000",
+                moreLeft: "https://lh3.googleusercontent.com/d/1cQ522odb1UkAJdJOwR6vnum8eDB9dBzv=s2000",
+                moreRight: "https://lh3.googleusercontent.com/d/1PP5Vwsmfx2FyHkEAsU464X11THcx5RxL=s2000"
+            },
+            {
+                title: "Prototype 2",
+                type: "images",
+                left: "https://lh3.googleusercontent.com/d/1GcaBVwI3etBkDRrbtNI1KsFxLUx-bx28=s2000",
+                right: "https://lh3.googleusercontent.com/d/1Wk8KjH0nbw8vp44YoELt-ywrEJR3zBWB=s2000",
+                moreLeft: "https://lh3.googleusercontent.com/d/1himxsvPuYYyH8m9f3B7qXBWeQMvpHmtX=s2000",
+                moreRight: "https://lh3.googleusercontent.com/d/1vX10y4-j5JWyZDI94fg0TEmEntw_N4Yw=s2000"
+            },
+            {
+                title: "Prototype 3",
+                type: "images",
+                left: "https://lh3.googleusercontent.com/d/1icRIRcyuevTfQhonf1WJGQpmyE-Nn5vn=s2000",
+                right: "https://lh3.googleusercontent.com/d/1Rqd5d19LC4txbHNFKgUT-cy-9OUKZWTa=s2000",
+                moreLeft: "https://lh3.googleusercontent.com/d/1zQzcLJirQtssnMSLQOXvWM2ymIfKlh6y=s2000",
+                moreRight: "https://lh3.googleusercontent.com/d/108sOuee-Yk1oT3qIQKs1ej_olVz-P7jZ=s2000"
+            },
+            {
+                title: "Prototype 4",
+                type: "images",
+                left: "https://lh3.googleusercontent.com/d/1Da9D-rRLgipyAgv75FFE8LDtB8loNmVH=s2000",
+                right: "https://lh3.googleusercontent.com/d/1a22MRDgmhZVQVczR2g52rp4iwfE6fgrm=s2000",
+                moreLeft: "https://lh3.googleusercontent.com/d/1AGJfXe5VnACdQF3ljcs4L4RFVVIyEyDc=s2000",
+                moreRight: "https://lh3.googleusercontent.com/d/1vNLNdiUk0rwEJp2bTr0zkoZGsxDLVxc3=s2000"
+            }
+        ];
+
+        let currentIndex = 0;
+        let selectedColors = [];
+        let selectedProto5Colors = [];
+
+        function initColorGrid() {
+            const grid = document.getElementById('color-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            colors.forEach((color, index) => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+
+                const isSelected = selectedColors.some(c => c.id === color.id);
+                if (isSelected) item.classList.add('selected');
+
+                item.innerHTML = `
+                    <img src="https://lh3.googleusercontent.com/d/${color.id}=s600" alt="${color.name}">
+                    <div class="color-name">${color.name}</div>
+                `;
+                item.onclick = () => toggleColor(color, item, index);
+                grid.appendChild(item);
+            });
+        }
+
+        function toggleColor(color, element, index) {
+            const colorIndex = selectedColors.findIndex(c => c.id === color.id);
+
+            if (colorIndex > -1) {
+                selectedColors.splice(colorIndex, 1);
+                element.classList.remove('selected');
+            } else {
+                if (selectedColors.length >= 6) return;
+                selectedColors.push(color);
+                element.classList.add('selected');
+            }
+
+            updatePreview();
+
+            activePreset = null;
+            if (typeof updatePresetButtons === 'function') updatePresetButtons();
+        }
+
+        function updatePreview() {
+            const stack = document.getElementById('preview-stack');
+            const countEl = document.getElementById('selection-count');
+
+            if (!stack || !countEl) return;
+            stack.innerHTML = '';
+
+            if (selectedColors.length === 0) {
+                stack.innerHTML = '<p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Select colors to preview</p>';
+            } else {
+                const spacing = 60;
+                const totalWidth = (selectedColors.length - 1) * spacing;
+                const startX = -totalWidth / 2;
+
+                selectedColors.forEach((color, index) => {
+                    const img = document.createElement('img');
+                    img.src = `https://lh3.googleusercontent.com/d/${color.id}=s600`;
+                    img.alt = color.name;
+                    img.style.left = `calc(50% + ${startX + (index * spacing)}px)`;
+                    img.style.transform = 'translateX(-50%)';
+                    img.style.zIndex = index + 1;
+                    img.style.transition = 'none';
+                    stack.appendChild(img);
+                });
+            }
+
+            countEl.textContent = `${selectedColors.length} of 6 selected`;
+            countEl.classList.toggle('limit-reached', selectedColors.length === 6);
+        }
+
+        function updateUI() {
+            const data = prototypes[currentIndex];
+            document.getElementById('proto-title').innerText = data.title;
+            document.getElementById('progress-text').innerText = `Page ${currentIndex + 1} of ${prototypes.length}`;
+
+            document.getElementById('image-view').style.display = 'none';
+            document.getElementById('form-view').style.display = 'none';
+            document.getElementById('color-picker-view').style.display = 'none';
+            document.getElementById('more-btn').style.display = 'none';
+
+            const navBox = document.querySelector('.proto-nav-box');
+            const popupGroup = document.getElementById('nav-popup-group');
+            const presetGroup = document.getElementById('nav-preset-group');
+
+            const summaryBox = document.getElementById('proto5-summary');
+            if (currentIndex === 0 && selectedProto5Colors.length === 6) {
+                summaryBox.style.display = 'block';
+            } else {
+                summaryBox.style.display = 'none';
+            }
+
+            if (navBox) {
+                if (data.type === "images") {
+                    navBox.style.display = 'none';
+                } else {
+                    navBox.style.display = 'flex';
+                    if (data.type === "color-picker") {
+                        popupGroup.style.display = 'none';
+                        presetGroup.style.display = 'flex';
+                    } else {
+                        popupGroup.style.display = 'flex';
+                        presetGroup.style.display = 'none';
+                    }
+                }
+            }
+
+            if (data.type === "color-picker") {
+                document.getElementById('color-picker-view').style.display = 'block';
+                initColorGrid();
+                updatePreview();
+            } else if (data.type === "form") {
+                document.getElementById('form-view').style.display = 'flex';
+                document.getElementById('prev-btn-form').style.visibility = (currentIndex === 0) ? 'hidden' : 'visible';
+                document.getElementById('prev-btn-form').disabled = (currentIndex === 0);
+                document.getElementById('next-btn-form').disabled = (currentIndex === prototypes.length - 1);
+            } else if (data.type === "images") {
+                document.getElementById('image-view').style.display = 'flex';
+                document.getElementById('more-btn').style.display = 'inline-block';
+                document.getElementById('img-left').src = data.left;
+                document.getElementById('img-right').src = data.right;
+                document.getElementById('prev-btn').disabled = (currentIndex === 0);
+
+                const isLast = (currentIndex === prototypes.length - 1);
+                document.getElementById('next-btn').style.display = isLast ? 'none' : 'flex';
+                document.getElementById('restart-btn').style.display = isLast ? 'flex' : 'none';
+            }
+        }
+
+        function openImage(imgId) {
+            const imgElement = document.getElementById(imgId);
+            if (!imgElement) return;
+            const imgSrc = imgElement.src;
+            if (!imgSrc || imgSrc === window.location.href) return;
+            document.getElementById('overlay-img').src = imgSrc;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closeImage() { document.getElementById('overlay').style.display = 'none'; }
+
+        function openMore() {
+            const data = prototypes[currentIndex];
+            if (data && data.type === "images") {
+                document.getElementById('more-img-left').src = data.moreLeft;
+                document.getElementById('more-img-right').src = data.moreRight;
+                document.getElementById('more-overlay').style.display = 'flex';
+            }
+        }
+
+        function closeMore(e) {
+            if (e.target.id === 'more-overlay') document.getElementById('more-overlay').style.display = 'none';
+        }
+
+        function nextPrototype() { if (currentIndex < prototypes.length - 1) { currentIndex++; updateUI(); } }
+        function prevPrototype() { if (currentIndex > 0) { currentIndex--; updateUI(); } }
+        function goToFirst() { currentIndex = 0; updateUI(); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") nextPrototype();
+            if (e.key === "ArrowLeft") prevPrototype();
+            if (e.key === "Escape") {
+                if (document.getElementById('overlay').style.display === 'flex') closeImage();
+                else if (document.getElementById('proto-popup-overlay').style.display === 'flex') closeProtoPopup();
+                else if (document.getElementById('proto5-color-overlay').style.display === 'flex') closeProto5ColorPopup();
+                else if (document.getElementById('more-overlay').style.display === 'flex') document.getElementById('more-overlay').style.display = 'none';
+            }
+        });
+
+        if (window._autoNavIndex !== undefined) currentIndex = window._autoNavIndex;
+        updateUI();
+
+        function openProtoPopup(i) {
+            const protoIndex = i + 2;
+            const proto = prototypes[protoIndex];
+            if (!proto || proto.type !== "images") return;
+            document.getElementById('popup-proto-title').textContent = proto.title;
+            document.getElementById('popup-img-left').src = proto.left;
+            document.getElementById('popup-img-right').src = proto.right;
+            document.getElementById('proto-popup-overlay').style.display = 'flex';
+        }
+
+        function closeProtoPopup() {
+            document.getElementById('proto-popup-overlay').style.display = 'none';
+            document.getElementById('popup-img-left').src = '';
+            document.getElementById('popup-img-right').src = '';
+        }
+
+        const colorPresets = {
+            1: ["Red", "Navy Blue", "Yellow", "Standard Green", "Metallic Violet", "Orange"],
+            2: ["Red", "Metallic Blue", "Yellow", "Standard Green", "Metallic Violet", "Orange"],
+            3: ["Red", "Metallic Blue", "Metallic Green", "Metallic Violet", "Yellow", "Orange"],
+            4: ["Red", "Navy Blue", "Standard Green", "Powder Blue", "Orange", "Yellow"]
+        };
+
+        let activePreset = null;
+
+        function applyPreset(protoNum) {
+            const names = colorPresets[protoNum];
+            if (!names) return;
+            selectedColors = names.map(name => colors.find(c => c.name === name)).filter(Boolean);
+            activePreset = protoNum;
+            initColorGrid();
+            updatePreview();
+            updatePresetButtons();
+        }
+
+        function clearPreset() {
+            selectedColors = [];
+            activePreset = null;
+            initColorGrid();
+            updatePreview();
+            updatePresetButtons();
+        }
+
+        function updatePresetButtons() {
+            const buttons = document.querySelectorAll('#nav-preset-group button:not(.preset-clear-btn)');
+            buttons.forEach((btn, i) => btn.classList.toggle('preset-active', activePreset === (i + 1)));
+        }
+
+        // ----------------------------
+        // Prototype 5 (separate) color picker popup + summary + preview
+        // ----------------------------
+        function openProto5ColorPopup() {
+            initProto5Grid();
+            updateProto5Count();
+            updateProto5Preview();
+            document.getElementById('proto5-color-overlay').style.display = 'flex';
+        }
+
+        function closeProto5ColorPopup() {
+            document.getElementById('proto5-color-overlay').style.display = 'none';
+        }
+
+        function initProto5Grid() {
+            const grid = document.getElementById('proto5-color-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            colors.forEach((color) => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+
+                const isSelected = selectedProto5Colors.some(c => c.id === color.id);
+                if (isSelected) item.classList.add('selected');
+
+                item.innerHTML = `
+                    <img src="https://lh3.googleusercontent.com/d/${color.id}=s600" alt="${color.name}">
+                    <div class="color-name">${color.name}</div>
+                `;
+
+                item.onclick = () => toggleProto5Color(color, item);
+                grid.appendChild(item);
+            });
+        }
+
+        function toggleProto5Color(color, element) {
+            const idx = selectedProto5Colors.findIndex(c => c.id === color.id);
+
+            if (idx > -1) {
+                selectedProto5Colors.splice(idx, 1);
+                element.classList.remove('selected');
+            } else {
+                if (selectedProto5Colors.length >= 6) return;
+                selectedProto5Colors.push(color);
+                element.classList.add('selected');
+            }
+
+            updateProto5Count();
+            updateProto5Preview();
+        }
+
+        function updateProto5Count() {
+            const countEl = document.getElementById('proto5-selection-count');
+            const submitBtn = document.getElementById('proto5-submit-btn');
+            if (!countEl || !submitBtn) return;
+
+            countEl.textContent = `${selectedProto5Colors.length} of 6 selected`;
+            countEl.classList.toggle('limit-reached', selectedProto5Colors.length === 6);
+            submitBtn.disabled = (selectedProto5Colors.length !== 6);
+        }
+
+        function updateProto5Preview() {
+            const stack = document.getElementById('proto5-preview-stack');
+            if (!stack) return;
+
+            stack.innerHTML = '';
+
+            if (selectedProto5Colors.length === 0) {
+                stack.innerHTML = '<p style="color: hsl(var(--muted-foreground)); font-size: 0.875rem;">Select colors to preview</p>';
+                return;
+            }
+
+            const spacing = 56;
+            const totalWidth = (selectedProto5Colors.length - 1) * spacing;
+            const startX = -totalWidth / 2;
+
+            selectedProto5Colors.forEach((color, index) => {
+                const img = document.createElement('img');
+                img.src = `https://lh3.googleusercontent.com/d/${color.id}=s600`;
+                img.alt = color.name;
+                img.style.left = `calc(50% + ${startX + (index * spacing)}px)`;
+                img.style.transform = 'translateX(-50%)';
+                img.style.zIndex = index + 1;
+                stack.appendChild(img);
+            });
+        }
+
+        function submitProto5Colors() {
+            if (selectedProto5Colors.length !== 6) return;
+            renderProto5Summary();
+            closeProto5ColorPopup();
+        }
+
+        function renderProto5Summary() {
+            const panel = document.getElementById('proto5-summary');
+            const list = document.getElementById('proto5-summary-list');
+            if (!panel || !list) return;
+
+            list.innerHTML = selectedProto5Colors.map(c => '<li>' + c.name + '</li>').join('');
+            panel.style.display = 'block';
+        }
+
+        // ======== EVENT LISTENERS (no inline onclick) ========
+
+        // Quick View popup buttons
+        document.querySelectorAll('[data-proto-popup]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                openProtoPopup(parseInt(this.getAttribute('data-proto-popup')));
+            });
+        });
+
+        // Preset buttons
+        document.querySelectorAll('[data-preset]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                applyPreset(parseInt(this.getAttribute('data-preset')));
+            });
+        });
+
+        // Single-element buttons
+        document.getElementById('open-proto5-color-btn').addEventListener('click', openProto5ColorPopup);
+        document.getElementById('preset-clear-btn').addEventListener('click', clearPreset);
+        document.getElementById('popup-close-btn').addEventListener('click', closeProtoPopup);
+        document.getElementById('proto5-submit-btn').addEventListener('click', submitProto5Colors);
+        document.getElementById('prev-btn').addEventListener('click', prevPrototype);
+        document.getElementById('next-btn').addEventListener('click', nextPrototype);
+        document.getElementById('restart-btn').addEventListener('click', goToFirst);
+        document.getElementById('prev-btn-form').addEventListener('click', prevPrototype);
+        document.getElementById('next-btn-form').addEventListener('click', nextPrototype);
+        document.getElementById('color-prev-btn').addEventListener('click', prevPrototype);
+        document.getElementById('color-next-btn').addEventListener('click', nextPrototype);
+        document.getElementById('more-btn').addEventListener('click', openMore);
+
+        // Image zoom containers
+        document.getElementById('img-left-container').addEventListener('click', function() { openImage('img-left'); });
+        document.getElementById('img-right-container').addEventListener('click', function() { openImage('img-right'); });
+        document.getElementById('popup-img-left-container').addEventListener('click', function() { openImage('popup-img-left'); });
+        document.getElementById('popup-img-right-container').addEventListener('click', function() { openImage('popup-img-right'); });
+        document.getElementById('more-img-left-container').addEventListener('click', function() { openImage('more-img-left'); });
+        document.getElementById('more-img-right-container').addEventListener('click', function() { openImage('more-img-right'); });
+
+        // Overlay close handlers
+        document.getElementById('overlay').addEventListener('click', closeImage);
+        document.getElementById('overlay-close-x').addEventListener('click', closeImage);
+        document.getElementById('more-overlay-close-x').addEventListener('click', function() {
+            document.getElementById('more-overlay').style.display = 'none';
+        });
+        document.getElementById('more-overlay').addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+        document.getElementById('proto-popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeProtoPopup();
+        });
+        document.getElementById('proto5-color-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeProto5ColorPopup();
+        });
+    </script>
+</body>
+</html>
